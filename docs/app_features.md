@@ -1,6 +1,6 @@
 # Cassandra Browser — Application Features
 
-A desktop GUI application for browsing Apache Cassandra clusters, built in Go using the Fyne cross-platform framework.
+A desktop GUI application for browsing **Apache Cassandra** clusters, built in Go using the Fyne cross-platform framework.
 
 ---
 
@@ -28,7 +28,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ## 1. User Interface Layout
 
 ### Main Window
-- Title bar displays **"{APP_DISPLAY_NAME} by oramad"**
+- Title bar displays **"Cassandra Browser by oramad"**
 - Two-panel split layout :
   - **Left panel** (30%) — connection tree
   - **Right panel** (70%) — details, forms, data, query results
@@ -44,8 +44,8 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
   - **Disconnect All**
   - Environment branches (with connection count in parentheses)
   - **Data In Local Files** — browse local Parquet files
-  - **JOIN Data In Local Files** — multi-file SQL JOIN query
-  - **App Stats** — live application statistics
+  - **JOIN Data In Local Files** — multi-file SQL JOIN query on local Parquet files
+  - **App Stats** — application statistics (simple graphs)
 - Per-connection nodes show current state : idle, connecting (spinner icon), or connected
 - Keyspace nodes expand under a connected connection
 - Table nodes expand under each keyspace
@@ -56,11 +56,11 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - Dynamic content area; renders different views depending on tree selection :
   - About page, connection form, cluster info, keyspace info, table details, data grid, query form, extraction form, local file query, stats view, settings forms
 - **Special output panel** (overlay at bottom) for extraction progress and result messages :
-  - Success messages — green
-  - Error messages — red
-  - Info messages — cyan
-  - Warning messages — amber
-  - Close button to dismiss; "View" button appears during active extraction
+  - Success messages
+  - Error messages
+  - Info messages
+  - Warning messages
+  - Close button to dismiss; "View" button appears during active data extraction task
 
 ---
 
@@ -83,8 +83,6 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 | Port | Yes | Numeric only, default 9042 |
 | Username | No | 3–30 chars if provided |
 | Password | No | 3–50 chars if provided, masked |
-| Prompt Username | No | Checkbox — prompt at connect time |
-| Prompt Password | No | Checkbox — prompt at connect time |
 
 - Real-time field validation on focus loss with inline error messages
 - **Test Connection** button — inline result display (Testing… → ✓ success or ✗ error)
@@ -94,8 +92,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - Datacenter-aware round-robin load balancing
 - Exponential backoff retry — 3 retries, 100 ms–10 s range
 - Snappy compression for large payloads
-- Password authentication via Cassandra PasswordAuthenticator
-- SSL/TLS support (configurable via gocql)
+- Authentication via Cassandra PasswordAuthenticator
 - Query timeout : 5 s (test), 30 s (browse)
 - Connection timeout : 5 s (test), 30 s (browse)
 - Page size : 100 rows (browsing), adaptive (extraction)
@@ -103,7 +100,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 
 ### Connection Storage
 - Stored in `~/.cassBrowser/cassBrowser.connections` (JSON)
-- Optional AES-256-GCM encryption of credential fields
+- By default, connection details are encrypted (AES-256)
 - Automatic startup migration for encryption format changes
 - Automatic deduplication of duplicate connection names on load
 - File permissions : 0600 (owner read/write only)
@@ -168,7 +165,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ## 5. CQL Query Execution
 
 ### Query Features
-- Multi-line CQL query input with **Safe Entry** widget (patches a Fyne v2.4.4 word-move cursor crash)
+- Multi-line CQL query input
 - Execute and Clear buttons
 - Query results displayed in the paginated data grid
 - Row count shown after execution
@@ -188,15 +185,15 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ## 6. Data Export
 
 ### Export to Apache Parquet
-- Full table extraction to `.parquet` files
+- Full table data extraction to `.parquet` files
 - **Column selection** — choose specific columns to include
 - Optional **WHERE clause** with ALLOW FILTERING
-- Cassandra type metadata embedded in Parquet file metadata (enables round-trip type fidelity)
-- Progress tracking with live status messages in output panel
-- Cancellation support — partial file retained on cancel
+- Cassandra type metadata embedded in Parquet file metadata
+- Data Extraction progress tracking with live status messages in output panel
+- Cancellation support — partial Parquet file retained on cancel
 
 ### Parquet Writer Optimisation
-- Adaptive page sizing : 5 000 rows default; 2 000 rows for wide-column tables
+- Adaptive page sizing : 5,000 rows default; 2,000 rows for wide-column tables
 - Wide-column detection : `blob`, `text`, `varchar`, `ascii`, `list`, `set`, `map`, `tuple`
 - Column names sorted alphabetically to match parquet-go schema ordering
 - Row-group batching for memory efficiency
@@ -205,12 +202,12 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ### Export File Management
 - Output location : `<working-directory>/data/`
 - Filename customisable with date/time defaults
-- File creation tracked via Linux `statx` syscall
-- File permissions : 0600
+- File creation (tracked via Linux `statx` syscall)
+- File permissions : 0600 (on Linux compatible systems)
 
 ---
 
-## 7. Parquet File Querying — DuckDB SQL
+## 7. Parquet File Querying — using DuckDB (SQL)
 
 ### Local File Browsing
 - Scans `<working-directory>/data/` for `.parquet` files on demand
@@ -242,14 +239,12 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ## 8. Security and Encryption
 
 ### Connection Credential Encryption
-- AES-256-GCM encryption for stored connection credentials (configurable at build time)
+- AES-256-GCM encryption for stored connection credentials
 - Encryption key derived **per machine** — not password-based :
-  - Inputs : hostname + MAC address + OS machine-id
-  - Key derivation : PBKDF2 with SHA-256, 100 000 iterations
+  - Inputs : hostname + OS machine-id
+  - Key derivation : PBKDF2 with SHA-256, 100,000 iterations
 - Encrypted fields Base64-encoded with embedded nonce
-- Connection files are **not portable** between machines when encryption is enabled
-- Supports mixed files (some encrypted, some plain-text entries)
-- Automatic migration at startup when encryption mode changes
+- Connection files are **not portable** between machines due to strong encryption
 
 ### File System Security
 - Config directory : 0700 (owner access only)
@@ -260,7 +255,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 ### Query Security
 - Regex-based CQL validation with comment and string literal stripping
 - Multi-statement injection prevention
-- SELECT-only enforcement for both CQL and DuckDB SQL
+- SELECT-only enforcement for both Cassandra CQL and DuckDB SQL
 - Partition key filter enforcement (auto-LIMIT as safety net)
 
 ### Display Check
@@ -318,7 +313,6 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - **App font size** — scales the entire UI
 - **Grid font size** — scales data table cells independently
 - Font sizes persisted in settings file
-- Monospace font enforced throughout
 - Dynamic title size updates on change
 
 ### Settings Persistence
@@ -348,7 +342,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - Applied to all multi-line query and form entry fields
 
 ### Working Directory Configuration
-- Set from Settings menu; right panel used for input (no popup dialogs)
+- Set from Settings menu; right panel used for input
 - Directory validated for write access before saving
 - Sub-directories `appLogs/`, `data/`, `temp/` created automatically with 0700 permissions
 
@@ -378,10 +372,10 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 | Disconnect all | Disconnected from all Cassandra connections |
 
 ### Special Output Panel Messages
-- **Success** (green, ✓ prefix) — extraction complete, file saved
-- **Error** (red, ✗ prefix) — extraction failed, query errors
-- **Info** (cyan) — general progress updates
-- **Warning** (amber, bullet points) — caution notices
+- **Success** (✓ prefix) — extraction complete, file saved
+- **Error** (✗ prefix) — extraction failed, query errors
+- **Info** — general progress updates
+- **Warning** — caution notices
 
 ---
 
@@ -398,7 +392,6 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - **Line chart visualisation** in the App Stats panel :
   - Custom widget with auto-scaling Y-axis
   - X-axis time labels
-  - Configurable title, unit, and line colour
   - Grid background
 
 ---
@@ -412,7 +405,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
   - Application startup
   - Connection test results
   - Extraction start, completion, cancellation
-  - Window close
+  - Application close
 
 ---
 
@@ -453,7 +446,7 @@ A desktop GUI application for browsing Apache Cassandra clusters, built in Go us
 - **Token-aware routing** — queries routed directly to the owning replica
 - **Snappy compression** — reduces network payload for large result sets
 - **Adaptive extraction page size** — automatically reduced for wide-column tables
-- **Parallel startup** — connection migrations run concurrently with Fyne initialisation
+- **Parallel startup** — connection migrations run concurrently with Fyne initialization
 - **Row-group batching** — Parquet writes use batched row groups for memory efficiency
 - **Per-query DuckDB instance** — each SQL query gets a fresh in-memory DuckDB instance, preventing state leakage
 
@@ -468,7 +461,7 @@ All values injected at compile time via `-ldflags -X`; no configuration files ne
 | Binary name | `APP_COMPILE_NAME` | `cassBrowser` |
 | Display name | `APP_DISPLAY_NAME` | `Cassandra Browser` |
 | Version | `APP_VERSION` | `1.0` |
-| Build date | `APP_VERSION_DATE` | — |
+| Build date | `APP_VERSION_DATE` | `20-May-2026` |
 | Encrypt connections | `ENCRYPT_CONNECTION_DETAILS` | `yes` |
 
 - Binary is fully standalone — all configuration baked in at build time
