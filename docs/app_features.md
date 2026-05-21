@@ -12,7 +12,7 @@ A desktop GUI application for browsing **Apache Cassandra** clusters, built in G
 4. [Data Viewing and Pagination](#4-data-viewing-and-pagination)
 5. [CQL Query Execution](#5-cql-query-execution)
 6. [Data Export](#6-data-export)
-7. [Parquet File Querying — using DuckDB SQL](#7-parquet-file-querying--using-duckdb-sql)
+7. [Parquet File Querying — SQL using DuckDB](#7-parquet-file-querying--sql-using-duckdb)
 8. [Security and Encryption](#8-security-and-encryption)
 9. [Themes and Appearance](#9-themes-and-appearance)
 10. [Menus, Controls and Keyboard Shortcuts](#10-menus-controls-and-keyboard-shortcuts)
@@ -207,7 +207,7 @@ A desktop GUI application for browsing **Apache Cassandra** clusters, built in G
 
 ---
 
-## 7. Parquet File Querying — using DuckDB SQL
+## 7. Parquet File Querying — SQL using DuckDB
 
 ### Local File Browsing
 - Scans `<working-directory>/data/` for `.parquet` files on demand
